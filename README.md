@@ -330,3 +330,122 @@ FROM Student_in_class
 JOIN Class ON Student_in_class.class = Class.id
 WHERE Class.name = '10 B';
 ```
+
+**Task №40:** _Выведите название предметов, которые преподает Ромашкин П.П. (Romashkin P.P.). Обратите внимание, что в базе данных есть несколько учителей с такими фамилией и инициалами._
+```sql
+SELECT name as subjects
+FROM Teacher
+JOIN Schedule ON Schedule.teacher = Teacher.id
+JOIN Subject ON Subject.id = Schedule.subject
+WHERE first_name LIKE 'P%'
+  AND middle_name LIKE 'P%'
+  AND last_name LIKE 'Romashkin';
+```
+
+**Task №41:** _Выясните, во сколько по расписанию начинается четвёртое занятие._
+```sql
+SELECT start_pair
+FROM Timepair
+WHERE id = 4;
+
+-- или так
+SELECT start_pair
+FROM Timepair
+WHERE id IN (
+    SELECT number_pair
+    FROM Schedule
+    WHERE number_pair = '4');
+```
+
+**Task №42:** _Сколько времени обучающийся будет находиться в школе, учась со 2-го по 4-ый уч. предмет?_
+```sql
+SELECT DISTINCT TIMEDIFF(
+    (
+    SELECT end_pair
+    FROM Timepair
+    WHERE id = '4'),
+    (
+    SELECT start_pair
+    FROM Timepair
+    WHERE id = '2')) AS time
+FROM Timepair;
+```
+
+**Task №43:** _Выведите фамилии преподавателей, которые ведут физическую культуру (Physical Culture). Отсортируйте преподавателей по фамилии в алфавитном порядке._
+```sql
+SELECT last_name
+FROM Teacher
+JOIN Schedule ON Teacher.id = Schedule.teacher
+JOIN Subject ON Schedule.subject = Subject.id
+WHERE Subject.name = 'Physical Culture'
+ORDER BY last_name;
+
+-- или так 
+SELECT last_name
+FROM Teacher
+WHERE id IN (
+    SELECT teacher
+    FROM Schedule
+    WHERE subject = (
+        SELECT id
+        FROM Subject
+        WHERE name = 'Physical Culture'))
+ORDER BY last_name;
+```
+
+**Task №44:** _Найдите максимальный возраст (количество лет) среди обучающихся 10 классов на сегодняшний день. Для получения текущих даты и времени используйте функцию NOW()._
+```sql
+SELECT MAX(TIMESTAMPDIFF(YEAR,birthday,CURRENT_DATE)) AS max_year
+FROM Student
+JOIN Student_in_class ON Student.id = Student_in_class.student
+JOIN Class ON Student_in_class.class = Class.id
+WHERE Class.name LIKE '10%';
+
+-- или так
+SELECT MAX(TIMESTAMPDIFF(YEAR, birthday, NOW())) AS max_year
+FROM Student
+WHERE id IN (
+    SELECT student
+    FROM Student_in_class
+    WHERE class IN (
+        SELECT id
+        FROM Class
+        WHERE name LIKE '10%'));
+```
+
+**Task №45:** _Какие кабинеты чаще всего использовались для проведения занятий? Выведите те, которые использовались максимальное количество раз._
+```sql
+SELECT classroom
+FROM Schedule
+GROUP BY classroom
+HAVING COUNT(classroom) = (
+    SELECT COUNT(classroom)
+    FROM Schedule
+    GROUP BY classroom
+    ORDER BY COUNT(classroom) DESC
+    LIMIT 1);
+```
+
+**Task №46:** _В каких классах введет занятия преподаватель "Krauze" ?_
+```sql
+SELECT DISTINCT name
+FROM Class
+JOIN Schedule ON Class.id = Schedule.class
+JOIN Teacher ON Schedule.teacher = Teacher.id
+WHERE Teacher.last_name='Krauze';
+
+-- или так 
+SELECT name
+FROM Class
+WHERE id IN (
+    SELECT class
+    FROM Schedule
+    WHERE teacher IN (
+        SELECT id
+        FROM Teacher
+        WHERE last_name = 'Krauze'));
+```
+
+
+
+
