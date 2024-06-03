@@ -446,6 +446,52 @@ WHERE id IN (
         WHERE last_name = 'Krauze'));
 ```
 
+**Task №47:** _Сколько занятий провел Krauze 30 августа 2019 г.?_
+```sql
+SELECT COUNT(teacher) AS count
+FROM Schedule
+WHERE teacher = (
+    SELECT id
+    FROM Teacher
+    WHERE last_name = 'Krauze') AND DATE(date) = '2019-08-30';
+```
 
+**Task №48:** _Выведите заполненность классов в порядке убывания._
+```sql
+SELECT name, COUNT(Student_in_class.student) AS count
+FROM Class
+JOIN Student_in_class ON Student_in_class.class = Class.id
+GROUP BY Class.name
+ORDER BY count DESC;
+```
 
+**Task №49:** _Какой процент обучающихся учится в "10 A" классе? Выведите ответ в диапазоне от 0 до 100 с округлением до четырёх знаков после запятой, например, 96.0201._
+```sql
+SELECT COUNT(student) * 100 / (SELECT COUNT(student) FROM Student_in_class) AS percent
+FROM Student_in_class
+JOIN Class ON Student_in_class.class = Class.id
+WHERE name='10 A';
 
+-- или так 
+SELECT ROUND(
+(
+   SELECT COUNT(*)
+   FROM Student_in_class
+   WHERE class IN (
+       SELECT id
+       FROM Class
+       WHERE name = '10 A'
+   )) * 100.0 / COUNT(*), 4) AS percent
+FROM Student_in_class;
+```
+
+**Task №50:** _Какой процент обучающихся родился в 2000 году? Результат округлить до целого в меньшую сторону._
+```sql
+SELECT FLOOR(
+    (
+       SELECT COUNT(*)
+       FROM Student
+       WHERE YEAR(birthday) = 2000
+    ) * 100 / COUNT(*)) as percent
+FROM Student
+```
