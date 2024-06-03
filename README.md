@@ -47,7 +47,7 @@ WHERE plane = 'Boeing' AND Company.id = Trip.company;
 
 **Task №8:** _В какие города можно улететь из Парижа (Paris) и сколько времени это займёт?_
 ```sql
-SELECT town_to, TIMEDIFF(time_in, time_out) as flight_time
+SELECT town_to, TIMEDIFF(time_in, time_out) AS flight_time
 FROM trip
 WHERE town_from = 'Paris';
 ```
@@ -80,7 +80,7 @@ WHERE LENGTH(name) = (
 
 **Task №12:** _Вывести id и количество пассажиров для всех прошедших полётов._
 ```sql
-SELECT trip, COUNT(passenger) as count
+SELECT trip, COUNT(passenger) AS count
 FROM Pass_in_trip
 GROUP BY trip;
 ```
@@ -113,25 +113,83 @@ WHERE Passenger.name = 'Steve Martin' AND Trip.town_to = 'London';
 
 **Task №16:** _Вывести отсортированный по количеству перелетов (по убыванию) и имени (по возрастанию) список пассажиров, совершивших хотя бы 1 полет._
 ```sql
-SELECT passenger.name, COUNT(Pass_in_trip.passenger) as count
+SELECT passenger.name, COUNT(Pass_in_trip.passenger) AS count
 FROM Pass_in_trip
 JOIN Passenger ON Pass_in_trip.passenger = Passenger.id
 GROUP BY passenger.name
 HAVING count >= 1
-ORDER BY count DESC, passenger.name ASC 
+ORDER BY count DESC, passenger.name ASC;
 ```
 
+**Task №17:** _Определить, сколько потратил в 2005 году каждый из членов семьи. В результирующей выборке не выводите тех членов семьи, которые ничего не потратили._
+```sql
+SELECT member_name, status, SUM(Payments.amount * Payments.unit_price) AS costs
+FROM FamilyMembers
+JOIN Payments ON FamilyMembers.member_id = Payments.family_member
+WHERE YEAR(Payments.date) = 2005
+GROUP BY member_name, status;
+```
 
+**Task №18:** _Выведите имя самого старшего человека. Если таких несколько, то выведите их всех._
+```sql
+SELECT member_name
+FROM FamilyMembers
+WHERE birthday = (
+    SELECT MIN(birthday)
+    FROM FamilyMembers);
+```
 
+**Task №19:** _Определить, кто из членов семьи покупал картошку (potato)._
+```sql
+SELECT DISTINCT status
+FROM FamilyMembers
+JOIN Payments ON FamilyMembers.member_id = Payments.family_member
+JOIN Goods ON Goods.good_id = Payments.good
+WHERE Goods.good_name = 'potato';
+```
 
+**Task №20:** _Сколько и кто из семьи потратил на развлечения (entertainment). Вывести статус в семье, имя, сумму._
+```sql
+SELECT status, member_name, SUM(Payments.amount * Payments.unit_price) AS costs
+FROM FamilyMembers
+JOIN Payments ON Payments.family_member = FamilyMembers.member_id
+JOIN Goods ON Goods.good_id = Payments.good
+JOIN GoodTypes ON GoodTypes.good_type_id = Goods.type
+WHERE GoodTypes.good_type_name = 'entertainment'
+GROUP BY status, member_name;
+```
 
+**Task №21:** _Определить товары, которые покупали более 1 раза._
+```sql
+SELECT good_name
+FROM Goods
+JOIN Payments ON Goods.good_id = Payments.good
+GROUP BY good_name
+HAVING COUNT(Payments.good) > 1;
+```
 
+**Task №22:** _Найти имена всех матерей (mother)._
+```sql
+SELECT member_name
+FROM FamilyMembers
+WHERE status = 'mother';
+```
 
+**Task №23:** _Найдите самый дорогой деликатес (delicacies) и выведите его цену._
+```sql
+SELECT good_name, unit_price 
+FROM Payments
+JOIN Goods ON Payments.good = Goods.good_id
+JOIN GoodTypes ON Goods.type = GoodTypes.good_type_id
+WHERE good_type_name = 'delicacies'
+LIMIT 1;
+```
 
-
-
-
-
-
-
-
+**Task №24:** _Определить кто и сколько потратил в июне 2005._
+```sql
+SELECT member_name, SUM(amount * unit_price) AS costs
+FROM FamilyMembers
+JOIN Payments ON Payments.family_member = FamilyMembers.member_id
+WHERE DATE_FORMAT(Payments.date, '%m.%Y') = '06.2005'
+GROUP BY FamilyMembers.member_name;
+```
