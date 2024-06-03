@@ -495,3 +495,48 @@ SELECT FLOOR(
     ) * 100 / COUNT(*)) as percent
 FROM Student
 ```
+
+**Task №51:** _Добавьте товар с именем "Cheese" и типом "food" в список товаров (Goods)._
+```sql
+INSERT INTO Goods (good_id, good_name, type)
+SELECT
+    (SELECT COUNT(*) + 1 FROM Goods),
+    'Cheese',
+    (SELECT good_type_id FROM GoodTypes WHERE good_type_name = 'food');
+```
+
+**Task №52:** _Добавьте в список типов товаров (GoodTypes) новый тип "auto"._
+```sql
+INSERT INTO GoodTypes (good_type_id, good_type_name)
+SELECT
+    (SELECT COUNT(*) + 1 FROM GoodTypes),
+    'auto';
+```
+
+**Task №53:** _Измените имя "Andie Quincey" на новое "Andie Anthony"._
+```sql
+UPDATE FamilyMembers
+SET member_name = 'Andie Anthony'
+WHERE member_name = 'Andie Quincey';
+```
+
+**Task №54:** _Удалить всех членов семьи с фамилией "Quincey"._
+```sql
+DELETE FROM FamilyMembers
+WHERE member_name LIKE '%Quincey';
+```
+
+**Task №55:** _Удалить компании, совершившие наименьшее количество рейсов._
+```sql
+DELETE FROM Company
+WHERE Company.id IN (
+    SELECT company
+    FROM Trip
+    GROUP BY company
+    HAVING COUNT(id) = (
+        SELECT MIN(count)
+        FROM (
+             SELECT COUNT(id) AS count
+             FROM Trip
+             GROUP BY company) AS subquery));
+```
