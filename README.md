@@ -70,6 +70,7 @@ WHERE time_out BETWEEN '1900-01-01T10:0:00.000Z' AND '1900-01-01T14:0:00.000Z';
 ```sql
 SELECT name FROM Passenger
 ORDER BY LENGTH(name) DESC LIMIT 1;
+
 -- или так
 SELECT name
 FROM passenger
@@ -193,3 +194,75 @@ JOIN Payments ON Payments.family_member = FamilyMembers.member_id
 WHERE DATE_FORMAT(Payments.date, '%m.%Y') = '06.2005'
 GROUP BY FamilyMembers.member_name;
 ```
+
+**Task №25:** _Определить, какие товары не покупались в 2005 году._
+```sql
+SELECT good_name
+FROM Goods
+WHERE good_id NOT IN (
+    SELECT good
+    FROM Payments
+    WHERE YEAR(date) = '2005');
+```
+
+**Task №26:** _Определить группы товаров, которые не приобретались в 2005 году._
+```sql
+SELECT good_type_name
+FROM GoodTypes
+WHERE GoodTypes.good_type_id NOT IN (
+    SELECT Goods.type
+    FROM Goods
+    JOIN Payments ON Goods.good_id = Payments.good
+    WHERE YEAR(Payments.date) = '2005');
+```
+
+**Task №27:** _Узнайте, сколько было потрачено на каждую из групп товаров в 2005 году. Выведите название группы и потраченную на неё сумму. Если потраченная сумма равна нулю, т.е. товары из этой группы не покупались в 2005 году, то не выводите её._
+```sql
+SELECT good_type_name, SUM(amount*unit_price) AS costs FROM GoodTypes
+JOIN Goods ON good_type_id = type
+JOIN Payments ON good = good_id AND YEAR(date) = 2005
+GROUP BY good_type_name;
+```
+
+**Task №28:** _Сколько рейсов совершили авиакомпании из Ростова (Rostov) в Москву (Moscow) ?_
+```sql
+SELECT COUNT(id) AS count 
+FROM Trip
+WHERE town_from = 'Rostov' AND town_to = 'Moscow';
+
+-- или так
+SELECT COUNT(town_from) as count
+FROM Trip
+WHERE town_to = 'Moscow'
+```
+
+**Task №29:** _Выведите имена пассажиров улетевших в Москву (Moscow) на самолете TU-134._
+```sql
+SELECT DISTINCT name
+FROM Passenger
+JOIN Pass_in_trip ON Pass_in_trip.passenger = Passenger.id
+JOIN Trip ON Trip.id = Pass_in_trip.trip
+WHERE Trip.town_to = 'Moscow' AND Trip.plane = 'TU-134';
+```
+
+**Task №30:** _Выведите нагруженность (число пассажиров) каждого рейса (trip). Результат вывести в отсортированном виде по убыванию нагруженности._
+```sql
+SELECT trip, COUNT(passenger) AS count
+FROM Pass_in_trip
+GROUP BY trip
+ORDER BY count DESC;
+```
+
+**Task №31:** _Вывести всех членов семьи с фамилией Quincey._
+```sql
+SELECT *
+FROM FamilyMembers
+WHERE member_name LIKE '%_Quincey';
+```
+
+**Task №32:** _Вывести средний возраст людей (в годах), хранящихся в базе данных. Результат округлите до целого в меньшую сторону._
+```sql
+SELECT FLOOR(AVG(TIMESTAMPDIFF(YEAR, birthday, NOW()))) AS age
+FROM FamilyMembers;
+```
+
