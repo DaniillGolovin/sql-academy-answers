@@ -266,3 +266,67 @@ SELECT FLOOR(AVG(TIMESTAMPDIFF(YEAR, birthday, NOW()))) AS age
 FROM FamilyMembers;
 ```
 
+**Task №33:** _Найдите среднюю цену икры на основе данных, хранящихся в таблице Payments. В базе данных хранятся данные о покупках красной (red caviar) и черной икры (black caviar). В ответе должна быть одна строка со средней ценой всей купленной когда-либо икры._
+```sql
+SELECT AVG(unit_price) AS cost
+FROM Payments
+JOIN Goods ON Goods.good_id = Payments.good
+WHERE Goods.good_name IN ('black caviar', 'red caviar');
+
+-- или так 
+SELECT AVG(unit_price) AS cost
+FROM Payments
+WHERE good IN (
+    SELECT good_id 
+    FROM Goods
+    WHERE good_name LIKE '%caviar');
+```
+
+**Task №34:** _Сколько всего 10-ых классов._
+```sql
+SELECT COUNT(name) AS count
+FROM Class
+WHERE name LIKE '10%';
+```
+
+**Task №35:** _Сколько различных кабинетов школы использовались 2 сентября 2019 года для проведения занятий?_
+```sql
+SELECT COUNT(classroom) AS count
+FROM Schedule
+WHERE DATE(date) = '2019-09-02';
+```
+
+**Task №36:** _Выведите информацию об обучающихся живущих на улице Пушкина (ul. Pushkina)?_
+```sql
+SELECT *
+FROM Student
+WHERE address LIKE 'ul. Pushkina%';
+```
+
+**Task №37:** _Сколько лет самому молодому обучающемуся ?_
+```sql
+SELECT TIMESTAMPDIFF(YEAR, MAX(birthday), NOW()) AS year
+FROM Student;
+```
+
+**Task №38:** _Сколько Анн (Anna) учится в школе ?_
+```sql
+SELECT COUNT(first_name) AS count
+FROM Student
+WHERE first_name = 'Anna';
+```
+**Task №39:** _Сколько обучающихся в 10 B классе ?_
+```sql
+SELECT COUNT(student) as count
+FROM Student_in_class
+WHERE class IN (
+    SELECT id
+    FROM class
+    WHERE name = '10 B');
+
+-- или так 
+SELECT COUNT(student) AS count
+FROM Student_in_class
+JOIN Class ON Student_in_class.class = Class.id
+WHERE Class.name = '10 B';
+```
